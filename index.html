@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fall 2026</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fall 26">
+<meta name="theme-color" content="#FBFAF7">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%231B2228'/><text y='70' x='50' text-anchor='middle' font-size='54' font-family='system-ui' font-weight='700' fill='%23FBFAF7'>26</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBFAF7; --ink:#1B2228; --muted:#6B7480; --faint:#9AA2AC;
+  --rule:#E4E1DA; --rule-soft:#EEEBE4;
+  --busi:#A32638; --mark:#14616D; --mana:#9A6510;
+  --busi-wash:#FBEFF0; --mark-wash:#EAF3F4; --mana-wash:#FAF2E4;
+  --good:#1E6B45; --warn:#9A6510;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);font-family:var(--sans);
+  font-size:16px;line-height:1.45;
+  padding:0 0 calc(64px + env(safe-area-inset-bottom));
+}
+.wrap{max-width:480px;margin:0 auto;padding:0 18px}
+
+/* ---------- status bar ---------- */
+.topbar{
+  position:sticky;top:0;z-index:20;background:var(--paper);
+  border-bottom:1px solid var(--rule);
+  padding-top:env(safe-area-inset-top);
+}
+.topbar-in{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:13px 0 12px}
+.today{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.daysleft{font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+
+h2{
+  font-size:12.5px;font-weight:600;letter-spacing:.02em;color:var(--muted);
+  margin:30px 0 10px;display:flex;align-items:center;justify-content:space-between;
+}
+h2 .count{font-family:var(--mono);font-weight:400;color:var(--faint)}
+.lede{font-size:14px;color:var(--muted);margin:0 0 14px}
+
+/* ---------- rows ---------- */
+.row{
+  display:flex;gap:12px;align-items:flex-start;
+  padding:12px 12px 12px 13px;margin-bottom:7px;
+  background:#fff;border:1px solid var(--rule-soft);border-left:3px solid var(--edge,var(--rule));
+  border-radius:3px;cursor:pointer;position:relative;
+}
+.row.busi{--edge:var(--busi)} .row.mark{--edge:var(--mark)} .row.mana{--edge:var(--mana)}
+.row:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.row.big{padding-top:15px;padding-bottom:15px}
+.row.big .nm{font-size:17px;font-weight:600}
+.row.done{background:#F7F6F2;border-color:var(--rule-soft)}
+.row.done .nm{color:var(--faint);text-decoration:line-through;text-decoration-thickness:1px}
+.row.done .meta{color:var(--faint)}
+
+.box{
+  flex:none;width:22px;height:22px;margin-top:1px;border:1.5px solid #C6C2B9;border-radius:4px;
+  background:#fff;display:grid;place-items:center;
+}
+.row.done .box{background:var(--edge);border-color:var(--edge)}
+.box svg{width:13px;height:13px;stroke:#fff;stroke-width:2.6;fill:none;opacity:0;
+  stroke-linecap:round;stroke-linejoin:round}
+.row.done .box svg{opacity:1}
+@media (prefers-reduced-motion:no-preference){
+  .box svg{transition:opacity .12s ease}
+  .row.done .box{transition:background .12s ease}
+}
+
+.body{flex:1;min-width:0}
+.nm{font-size:15px;font-weight:500;letter-spacing:-.005em;display:block}
+.meta{font-size:12.5px;color:var(--muted);margin-top:3px;font-family:var(--mono)}
+.meta .tag{color:var(--edge);font-weight:500}
+.note{font-size:12.5px;color:var(--warn);margin-top:4px}
+.pts{
+  flex:none;font-family:var(--mono);font-size:13px;font-variant-numeric:tabular-nums;
+  color:var(--muted);padding-top:2px;text-align:right;min-width:44px;
+}
+
+/* ---------- score entry ---------- */
+.score{display:none;padding:0 12px 13px 50px;margin:-7px 0 7px;background:#fff;
+  border:1px solid var(--rule-soft);border-left:3px solid var(--edge,var(--rule));
+  border-top:0;border-radius:0 0 3px 3px}
+.score.open{display:block}
+.score.busi{--edge:var(--busi)} .score.mark{--edge:var(--mark)} .score.mana{--edge:var(--mana)}
+.score label{font-size:12.5px;color:var(--muted);display:block;margin-bottom:6px}
+.score input{
+  font-family:var(--mono);font-size:15px;width:84px;padding:7px 9px;
+  border:1px solid var(--rule);border-radius:3px;background:var(--paper);color:var(--ink);
+}
+.score input:focus{outline:2px solid var(--ink);outline-offset:1px}
+.score .of{font-family:var(--mono);font-size:13px;color:var(--faint);margin-left:8px}
+
+/* ---------- week groups ---------- */
+.week{border-top:1px solid var(--rule);padding:14px 0 4px}
+.week-h{display:flex;justify-content:space-between;align-items:baseline;
+  width:100%;background:none;border:0;padding:0 0 11px;cursor:pointer;
+  font-family:var(--sans);color:var(--ink);text-align:left}
+.week-h:focus-visible{outline:2px solid var(--ink);outline-offset:3px}
+.wk-date{font-size:15px;font-weight:600;letter-spacing:-.01em}
+.wk-sum{font-family:var(--mono);font-size:12px;color:var(--faint);font-variant-numeric:tabular-nums}
+.week[data-open="0"] .week-body{display:none}
+.heavy .wk-date::after{
+  content:"";display:inline-block;width:5px;height:5px;border-radius:50%;
+  background:var(--busi);margin-left:7px;vertical-align:middle}
+
+/* ---------- disclosure ---------- */
+.disc{width:100%;background:none;border:1px solid var(--rule);border-radius:3px;
+  padding:11px 13px;font-family:var(--sans);font-size:13.5px;color:var(--muted);
+  text-align:left;cursor:pointer;display:flex;justify-content:space-between}
+.disc:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;gap:0;border-bottom:1px solid var(--rule);margin:0 0 18px}
+.tab{
+  flex:1;background:none;border:0;border-bottom:2.5px solid transparent;
+  padding:11px 4px 9px;font-family:var(--sans);font-size:13.5px;font-weight:500;
+  color:var(--faint);cursor:pointer;
+}
+.tab:focus-visible{outline:2px solid var(--ink);outline-offset:-2px}
+.tab[aria-selected="true"]{color:var(--c);border-bottom-color:var(--c)}
+.tab.busi{--c:var(--busi)} .tab.mark{--c:var(--mark)} .tab.mana{--c:var(--mana)}
+.panel[hidden]{display:none}
+
+/* ---------- grade readout ---------- */
+.readout{padding:16px;border-radius:3px;margin-bottom:18px}
+.readout.busi{background:var(--busi-wash)} .readout.mark{background:var(--mark-wash)}
+.readout.mana{background:var(--mana-wash)}
+.big-n{font-family:var(--mono);font-size:38px;font-weight:600;line-height:1;
+  font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.big-l{font-size:13px;color:var(--muted);margin-top:7px}
+.bar{height:5px;background:rgba(0,0,0,.09);border-radius:3px;margin:15px 0 4px;overflow:hidden;position:relative}
+.bar i{display:block;height:100%;background:var(--c);border-radius:3px}
+.readout.busi{--c:var(--busi)} .readout.mark{--c:var(--mark)} .readout.mana{--c:var(--mana)}
+.bar .mark-a{position:absolute;top:-3px;bottom:-3px;width:1.5px;background:var(--ink);opacity:.45}
+.bar-l{display:flex;justify-content:space-between;font-family:var(--mono);font-size:11.5px;color:var(--muted)}
+.verdict{font-size:14px;margin-top:14px;padding-top:13px;border-top:1px solid rgba(0,0,0,.09)}
+.verdict b{font-weight:600}
+
+/* ---------- rubric ---------- */
+.rub{width:100%;border-collapse:collapse;font-size:14px;margin-bottom:6px}
+.rub th{text-align:left;font-size:12.5px;font-weight:600;color:var(--muted);
+  padding:0 0 7px;border-bottom:1px solid var(--rule)}
+.rub td{padding:9px 0;border-bottom:1px solid var(--rule-soft);vertical-align:top}
+.rub td:last-child{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums;
+  white-space:nowrap;padding-left:10px}
+.rub tr:last-child td{border-bottom:0}
+.scale{display:flex;flex-wrap:wrap;gap:6px;margin:12px 0 20px}
+.scale span{font-family:var(--mono);font-size:12px;padding:5px 9px;background:#F2F0EB;border-radius:3px}
+.scale span.a{background:var(--ink);color:var(--paper)}
+.policy{font-size:14px;color:var(--muted);line-height:1.55;margin:0 0 8px}
+.policy b{color:var(--ink);font-weight:600}
+
+/* ---------- nav ---------- */
+.nav{
+  position:fixed;bottom:0;left:0;right:0;z-index:30;background:rgba(251,250,247,.96);
+  backdrop-filter:saturate(1.6) blur(10px);border-top:1px solid var(--rule);
+  padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-in{max-width:480px;margin:0 auto;display:flex}
+.nav button{
+  flex:1;background:none;border:0;padding:13px 4px 14px;cursor:pointer;
+  font-family:var(--sans);font-size:13px;font-weight:500;color:var(--faint);
+}
+.nav button[aria-current="true"]{color:var(--ink)}
+.nav button:focus-visible{outline:2px solid var(--ink);outline-offset:-3px}
+
+.empty{font-size:14px;color:var(--muted);padding:16px 0 4px}
+.foot{border-top:1px solid var(--rule);margin-top:34px;padding:18px 0 8px;
+  font-size:13px;color:var(--muted);line-height:1.6}
+.foot b{color:var(--ink);font-weight:600;display:block;margin-bottom:5px;font-size:13px}
+.foot ul{margin:0;padding-left:17px} .foot li{margin-bottom:7px}
+.reset{background:none;border:1px solid var(--rule);border-radius:3px;padding:8px 13px;
+  font-family:var(--sans);font-size:13px;color:var(--muted);cursor:pointer;margin-top:14px}
+</style>
+</head>
+<body>
+
+<header class="topbar"><div class="wrap topbar-in">
+  <span class="today" id="today"></span>
+  <span class="daysleft" id="daysleft"></span>
+</div></header>
+
+<main class="wrap">
+
+  <section id="view-due">
+    <h2>Due now <span class="count" id="c-now"></span></h2>
+    <div id="now"></div>
+
+    <h2>Next seven days <span class="count" id="c-soon"></span></h2>
+    <div id="soon"></div>
+
+    <div id="late-wrap">
+      <h2>Late, still worth points <span class="count" id="c-late"></span></h2>
+      <p class="lede">Only Management accepts late work. Penalty is 10% per day and no permission is needed.</p>
+      <div id="late"></div>
+    </div>
+
+    <div id="missed-wrap" style="margin-top:26px">
+      <button class="disc" id="missed-btn" aria-expanded="false">
+        <span id="missed-label"></span><span>Show</span>
+      </button>
+      <div id="missed" hidden style="margin-top:9px"></div>
+    </div>
+
+    <div class="foot">
+      <b>Two things still worth checking</b>
+      <ul>
+        <li>Marketing runs an optional essay in weeks 5, 6, 7, 9, 10, 12 and 13. The syllabus does not account for it. These rows carry no points until you confirm the value on Canvas.</li>
+        <li>Management weights add to 102 percent in the syllabus. These figures assume the syllabus quiz sits inside the 52 percent quiz block.</li>
+        <li>Business moved its week-two work from Aug 31 to Sep 8. These dates follow Canvas, not the syllabus.</li>
+      </ul>
+      <button class="reset" id="reset">Clear all progress</button>
+    </div>
+  </section>
+
+  <section id="view-all" hidden>
+    <h2>Every assignment <span class="count" id="c-all"></span></h2>
+    <div id="all"></div>
+  </section>
+
+  <section id="view-grades" hidden>
+    <div class="tabs" role="tablist">
+      <button class="tab busi" role="tab" aria-selected="true" data-c="busi">Business</button>
+      <button class="tab mark" role="tab" aria-selected="false" data-c="mark">Marketing</button>
+      <button class="tab mana" role="tab" aria-selected="false" data-c="mana">Management</button>
+    </div>
+    <div class="panel" id="p-busi"></div>
+    <div class="panel" id="p-mark" hidden></div>
+    <div class="panel" id="p-mana" hidden></div>
+  </section>
+
+</main>
+
+<nav class="nav"><div class="nav-in">
+  <button data-v="due" aria-current="true">Due</button>
+  <button data-v="all" aria-current="false">All work</button>
+  <button data-v="grades" aria-current="false">Grades</button>
+</div></nav>
+
+<script>
+"use strict";
+
+/* ============ course definitions ============ */
+const COURSE = {
+  busi:{name:"Business", full:"BUSI 3302 — Connecting Bauer to Business",
+        mode:"points", total:500, aCut:450,
+        scale:[["A","450+"],["B","400–449"],["C","350–399"],["D","300–349"],["F","0–299"]],
+        policy:"Graded on raw points, not percentages. Late or incomplete work receives a zero, with no make-ups outside the UH excused absence policy. Everything is due at 11:59pm. There are 78 extra credit points available, which is the safety net for a bad week.",
+        rubric:[["In-class Top Hat, 12 classes",60],["Group project presentation",50],["Group 360 peer review",30],["Business Writing Evaluation",25],["Top Hat reading and quizzes",116],["Résumé, LinkedIn and interview work",90],["Other assignments and quizzes",129]]},
+  mark:{name:"Marketing", full:"MARK 3336 — Introduction to Marketing",
+        mode:"points", total:420, aCut:400,
+        scale:[["A","400+"],["A−","380–399"],["B+","360–379"],["B","340–359"],["B−","320–339"],["C","280–319"],["D","250–279"],["F","<250"]],
+        policy:"An A needs 400 of 420, which is 95%. Lowest exam, lowest assignment and two lowest quizzes are dropped. Nothing is accepted late, quiz answers post at the deadline, and exams are not reopened. Exams run 60 minutes in Respondus LockDown Browser with a webcam, on a laptop or desktop only. Seven weeks also carry an optional essay that the syllabus never mentions; its point value still needs checking on Canvas.",
+        rubric:[["Exams, best 3 of 4",240],["Assignments, best 10 of 11",90],["Quizzes, best 10 of 12",90]]},
+  mana:{name:"Management", full:"MANA 3335 — Organizational Behavior and Management",
+        mode:"pct", total:100, aCut:93.51,
+        scale:[["A","93.51+"],["A−","89.51+"],["B+","86.51+"],["B","83.51+"],["B−","79.51+"],["C+","76.51+"],["C","73.51+"],["D","63.51+"],["F","<59.51"]],
+        policy:"Each chapter is five MindTap pieces: assignment, case activity, learn it, self-assessment and a decision simulation. All due Sundays at 11pm. Chapters double up on seven of the fourteen Sundays. This is the only course that forgives lateness, taking 10% off per day automatically with no permission needed, so if something has to slip, slip this one.",
+        rubric:[["MindTap, 20 chapters at 2.4 each",48],["Canvas quizzes, four at 13",52],["Syllabus quiz",2]]}
+};
+
+/* ============ assignments ============ */
+const A = (c,d,n,p,o={}) => ({c,d,n,p,...o});
+const ITEMS = [
+  /* --- BUSI 3302 --- */
+  A("busi","2026-09-08","Syllabus and course intro quiz",10,note:"Canvas moved this from Aug 31."),
+  A("busi","2026-09-08","Top Hat ch 1, Living the Dream",6),
+  A("busi","2026-09-08","Top Hat ch 2, Self Assessment",6),
+  A("busi","2026-09-08","Bauer code of ethics quiz",10),
+  A("busi","2026-09-08","Top Hat ch 6, Resumes and correspondence",10),
+  A("busi","2026-09-10","Resume kick-off, in person",10,note:"Offered Sep 8, 9 or 10."),
+  A("busi","2026-09-14","Top Hat ch 4, Getting ready for career fair",16),
+  A("busi","2026-09-14","Team charter",10,where:"EduSourced"),
+  A("busi","2026-09-14","VMock resume",10,note:"Course bans AI and copied resume content. Penalty is an F in the course."),
+  A("busi","2026-09-18","Career fair volunteer signup",5,xc:1),
+  A("busi","2026-09-18","Bauer career fair, 11am to 3pm at UH Hilton",5,xc:1),
+  A("busi","2026-09-21","LinkedIn profile",15,where:"EduSourced"),
+  A("busi","2026-09-21","On-campus recruiting quiz",10),
+  A("busi","2026-09-28","Top Hat ch 8, Interviewing",15),
+  A("busi","2026-09-28","LinkedIn 360 review",15,where:"EduSourced"),
+  A("busi","2026-09-28","Business Writing Evaluation",25,note:"Degree requirement. Under 2 puts a hold on registration."),
+  A("busi","2026-10-05","Top Hat ch 7, Networking",10),
+  A("busi","2026-10-05","Group project update",10,where:"EduSourced"),
+  A("busi","2026-10-05","Mock interview",15,note:"Complete in Bauer Career Gateway."),
+  A("busi","2026-10-05","VMock resume optimizer",10),
+  A("busi","2026-10-12","Top Hat ch 5, Business etiquette",10),
+  A("busi","2026-10-12","Midpoint team check-in survey",10,where:"EduSourced"),
+  A("busi","2026-10-12","Mock interview 360 review",15,where:"EduSourced"),
+  A("busi","2026-10-19","Top Hat ch 3, Choosing a path at Bauer",17),
+  A("busi","2026-10-26","CareerLeader assessment",10,note:"$30. Upload the PDF results. Register with key bauerundergrad-careermap."),
+  A("busi","2026-10-26","Gateway assignment",15),
+  A("busi","2026-10-26","Group project draft",15,where:"EduSourced"),
+  A("busi","2026-11-02","Top Hat ch 10, Prepare for the future",13),
+  A("busi","2026-11-02","Job analysis",15),
+  A("busi","2026-11-09","Top Hat ch 9, Work and money",13),
+  A("busi","2026-11-09","Group project presentation deliverables",50,big:1,where:"EduSourced",note:"The upload, not the talk. Live presentation is Nov 17 to 20."),
+  A("busi","2026-11-20","Live group presentation",0,big:1,note:"Presentation week, Nov 17 to 20. No-showing forfeits the 50 deliverable points."),
+  A("busi","2026-11-23","Group 360 peer review",30,where:"EduSourced",note:"Opens Nov 18."),
+  A("busi","2026-11-23","Reflection on experience",10,where:"EduSourced",note:"Opens Nov 18."),
+  A("busi","2026-11-30","Any other in-person career fair",3,xc:1),
+  A("busi","2026-11-30","BWE score posts",4,note:"Posts automatically. Nothing to submit."),
+  A("busi","2026-12-03","In-class Top Hat, 12 classes",60,note:"5 points a class. Cannot be made up."),
+  A("busi","2026-12-03","In-class Top Hat beyond 12 classes",40,xc:1),
+  A("busi","2026-12-04","Extra credit makeup survey",25,xc:1,note:"Opens Nov 18."),
+  /* --- MARK 3336 --- */
+  A("mark","2026-09-01","Wk 00 quiz",9,cat:"q"),
+  A("mark","2026-09-01","Wk 01 assignment, Xbox",9,cat:"a"),
+  A("mark","2026-09-01","Wk 01 quiz",9,cat:"q"),
+  A("mark","2026-09-08","Wk 02 assignment, Stanley",9,cat:"a"),
+  A("mark","2026-09-08","Wk 02 quiz",9,cat:"q"),
+  A("mark","2026-09-15","Wk 03 assignment, Metrics",9,cat:"a"),
+  A("mark","2026-09-15","Wk 03 quiz",9,cat:"q"),
+  A("mark","2026-09-29","Wk 05 assignment, Chik-fil-A",9,cat:"a"),
+  A("mark","2026-09-29","Wk 05 optional essay, Chik-fil-A",0,unk:1,note:"Not in the syllabus point structure. Check its Canvas value."),
+  A("mark","2026-09-29","Wk 05 quiz",9,cat:"q"),
+  A("mark","2026-10-06","Wk 06 assignment, Spotify",9,cat:"a"),
+  A("mark","2026-10-06","Wk 06 optional essay, Spotify",0,unk:1,note:"Not in the syllabus point structure. Check its Canvas value."),
+  A("mark","2026-10-06","Wk 06 quiz",9,cat:"q"),
+  A("mark","2026-10-13","Wk 07 assignment, Coach",9,cat:"a"),
+  A("mark","2026-10-13","Wk 07 optional essay, Coach",0,unk:1,note:"Not in the syllabus point structure. Check its Canvas value."),
+  A("mark","2026-10-13","Wk 07 quiz",9,cat:"q"),
+  A("mark","2026-10-27","Wk 09 assignment, Airline Class",9,cat:"a"),
+  A("mark","2026-10-27","Wk 09 optional essay, Airline Class",0,unk:1,note:"Not in the syllabus point structure. Check its Canvas value."),
+  A("mark","2026-10-27","Wk 09 quiz",9,cat:"q"),
+  A("mark","2026-11-03","Wk 10 assignment, Costco",9,cat:"a"),
+  A("mark","2026-11-03","Wk 10 optional essay, Costco",0,unk:1,note:"Not in the syllabus point structure. Check its Canvas value."),
+  A("mark","2026-11-03","Wk 10 quiz",9,cat:"q"),
+  A("mark","2026-11-17","Wk 12 assignment, TikTok",9,cat:"a"),
+  A("mark","2026-11-17","Wk 12 optional essay, TikTok",0,unk:1,note:"Not in the syllabus point structure. Check its Canvas value."),
+  A("mark","2026-11-17","Wk 12 quiz",9,cat:"q"),
+  A("mark","2026-11-24","Wk 13 assignment, Amazon v Walmart",9,cat:"a"),
+  A("mark","2026-11-24","Wk 13 optional essay, Amazon v Walmart",0,unk:1,note:"Not in the syllabus point structure. Check its Canvas value."),
+  A("mark","2026-11-24","Wk 13 quiz",9,cat:"q"),
+  A("mark","2026-12-01","Wk 14 assignment, Drug Prices",9,cat:"a"),
+  A("mark","2026-12-01","Wk 14 quiz",9,cat:"q"),
+  A("mark","2026-09-16","Exam 1, chapters 1 to 4",80,big:1,cat:"e",note:"60 minutes. LockDown Browser and webcam. Laptop or desktop only."),
+  A("mark","2026-10-14","Exam 2, chapters 5 to 9",80,big:1,cat:"e",note:"60 minutes. LockDown Browser and webcam. Laptop or desktop only."),
+  A("mark","2026-11-04","Exam 3, chapters 10 to 13, 17",80,big:1,cat:"e",note:"60 minutes. LockDown Browser and webcam. Laptop or desktop only."),
+  A("mark","2026-12-02","Exam 4, chapters 14 to 16, 18, 20",80,big:1,cat:"e",note:"60 minutes. LockDown Browser and webcam. Laptop or desktop only."),
+  /* --- MANA 3335 --- */
+  A("mana","2026-08-26","Syllabus quiz",2),
+  A("mana","2026-08-30","Ch 1 MindTap, Managing and the manager's job",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-09-06","Ch 2 MindTap, Traditional and contemporary perspectives",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-09-13","Ch 3 MindTap, Understanding the organization's environment",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-09-20","Ch 4 MindTap, Ethical and social environment",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-09-20","Ch 5 MindTap, Navigating the global environment",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-09-27","Ch 6 MindTap, Planning and decision making",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-10-04","Ch 7 MindTap, Managing strategy",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-10-04","Ch 8 MindTap, Decision making and problem solving",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-10-11","Ch 9 MindTap, Start-ups and new ventures",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-10-18","Ch 10 MindTap, Basic elements of organizing",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-10-18","Ch 11 MindTap, Managing organizational design",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-10-25","Ch 12 MindTap, Organization change and innovation",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-10-25","Ch 13 MindTap, Managing human resources",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-11-01","Ch 14 MindTap, Human behavior in organizations",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-11-01","Ch 15 MindTap, Employee motivation and performance",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-11-08","Ch 16 MindTap, Leadership and influence",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-11-08","Ch 17 MindTap, Interpersonal relations and communication",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-11-15","Ch 18 MindTap, Managing work groups and teams",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-11-22","Ch 19 MindTap, Basic elements of control",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-12-06","Ch 20 MindTap, Operations, quality and productivity",2.4,late:1,note:"Five parts: assignment, case activity, learn it, self-assessment, simulation."),
+  A("mana","2026-09-23","Canvas Quiz 1, chapters 1 to 5",13,big:1,late:1),
+  A("mana","2026-10-14","Canvas Quiz 2, chapters 6 to 9",13,big:1,late:1),
+  A("mana","2026-11-11","Canvas Quiz 3, chapters 10 to 17",13,big:1,late:1),
+  A("mana","2026-12-09","Canvas Quiz 4, chapters 18 to 20",13,big:1,late:1),
+];
+ITEMS.forEach((x,i)=>x.id=x.c+"-"+i);
+ITEMS.sort((a,b)=> a.d<b.d?-1: a.d>b.d?1: b.p-a.p);
+
+/* ============ state ============ */
+const KEY="fall26.v1";
+let S={};
+try{ S=JSON.parse(localStorage.getItem(KEY)||"{}"); }catch(e){ S={}; }
+const save=()=>{ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} };
+const st=id=> S[id]||(S[id]={done:false,score:null});
+
+/* ============ dates ============ */
+const NOW=new Date(); NOW.setHours(0,0,0,0);
+const parse=s=>{const[y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);};
+const days=s=>Math.round((parse(s)-NOW)/864e5);
+const fmt=s=>parse(s).toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+const short=s=>parse(s).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+const rel=n=> n===0?"Today": n===1?"Tomorrow": n<0?Math.abs(n)+(Math.abs(n)===1?" day late":" days late"): "in "+n+" days";
+
+/* ============ rendering ============ */
+const TICK='<svg viewBox="0 0 16 16"><polyline points="2.5,8.5 6.3,12 13.5,4"/></svg>';
+
+function rowHTML(x,opts={}){
+  const s=st(x.id), late=days(x.d)<0;
+  let meta=(opts.dated!==false? fmt(x.d):"")+
+    (opts.rel? " · "+rel(days(x.d)):"");
+  if(opts.showCourse!==false) meta+=' · <span class="tag">'+COURSE[x.c].name+"</span>";
+  if(x.where) meta+=" · "+x.where;
+  let note=x.note||"";
+  if(x.xc) note=note||"Extra credit";
+  if(x.unk && !note) note="Point value unconfirmed.";
+  if(opts.penalty && late && !s.done){
+    const d=Math.abs(days(x.d)), keep=Math.max(0,100-d*10);
+    note = keep>0
+      ? "Worth up to "+keep+"% if submitted today, about "+(x.p*keep/100).toFixed(1)+" points of your final grade."
+      : "The 10% a day penalty has consumed the points.";
+  }
+  return '<div class="row '+x.c+(s.done?" done":"")+(x.big?" big":"")+'" data-id="'+x.id+'" role="button" tabindex="0" aria-pressed="'+s.done+'">'+
+    '<span class="box">'+TICK+'</span>'+
+    '<span class="body"><span class="nm">'+x.n+'</span>'+
+      '<span class="meta">'+meta+'</span>'+
+      (note?'<span class="note">'+note+'</span>':'')+
+    '</span>'+
+    (x.p?'<span class="pts">'+(COURSE[x.c].mode==="pct"? x.p+"%" : x.p)+'</span>':'')+
+  '</div>'+
+  '<div class="score '+x.c+'" data-score="'+x.id+'">'+
+    '<label for="i-'+x.id+'">Points earned, if you know them</label>'+
+    '<input id="i-'+x.id+'" type="number" inputmode="decimal" step="0.1" min="0" max="'+x.p+'" '+
+      'value="'+(s.score===null?"":s.score)+'"><span class="of">of '+x.p+'</span>'+
+  '</div>';
+}
+
+function render(){
+  const d=new Date();
+  today.textContent=d.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"});
+  const last=Math.max(0,days("2026-12-09"));
+  daysleft.textContent=last+" days left";
+
+  const live=ITEMS.filter(x=>!st(x.id).done);
+  const nowL =live.filter(x=>{const n=days(x.d);return n>=0&&n<=3;});
+  const soonL=live.filter(x=>{const n=days(x.d);return n>3&&n<=7;});
+  const lateL=live.filter(x=>days(x.d)<0 && x.late && Math.abs(days(x.d))<10);
+  const missL=live.filter(x=>days(x.d)<0 && !lateL.includes(x));
+
+  now.innerHTML  = nowL.length? nowL.map(x=>rowHTML(x,{rel:1})).join("")
+    : '<p class="empty">Nothing due in the next three days.</p>';
+  soon.innerHTML = soonL.length? soonL.map(x=>rowHTML(x,{rel:1})).join("")
+    : '<p class="empty">Clear through '+short(new Date(NOW.getTime()+6048e5).toISOString().slice(0,10))+'.</p>';
+  document.getElementById("c-now").textContent=nowL.length||"";
+  document.getElementById("c-soon").textContent=soonL.length||"";
+
+  document.getElementById("late-wrap").style.display=lateL.length?"":"none";
+  late.innerHTML=lateL.map(x=>rowHTML(x,{rel:1,penalty:1})).join("");
+  document.getElementById("c-late").textContent=lateL.length||"";
+
+  document.getElementById("missed-wrap").style.display=missL.length?"":"none";
+  const lost=missL.reduce((t,x)=>t+(x.xc?0:x.p),0);
+  document.getElementById("missed-label").textContent=
+    missL.length+" past due, no longer submittable";
+  missed.innerHTML=missL.map(x=>rowHTML(x,{rel:1})).join("");
+
+  /* all work, grouped by week */
+  const wk={};
+  ITEMS.forEach(x=>{
+    const dt=parse(x.d), mon=new Date(dt); mon.setDate(dt.getDate()-((dt.getDay()+6)%7));
+    const k=mon.toISOString().slice(0,10); (wk[k]=wk[k]||[]).push(x);
+  });
+  const openWk=S.__wk||{};
+  all.innerHTML=Object.keys(wk).sort().map(k=>{
+    const it=wk[k], pts=it.reduce((t,x)=>t+(x.xc?0:x.p),0);
+    const doneN=it.filter(x=>st(x.id).done).length;
+    const heavy=it.filter(x=>!x.xc).length>=5;
+    const cur=days(k)<=0 && days(k)>-7;
+    const op=openWk[k]!==undefined? openWk[k] : (cur?1:0);
+    return '<div class="week'+(heavy?" heavy":"")+'" data-open="'+op+'">'+
+      '<button class="week-h" data-wk="'+k+'" aria-expanded="'+(op?"true":"false")+'">'+
+        '<span class="wk-date">'+short(k)+(cur?" · this week":"")+'</span>'+
+        '<span class="wk-sum">'+doneN+"/"+it.length+" done</span>"+
+      '</button>'+
+      '<div class="week-body">'+it.map(x=>rowHTML(x,{rel:0})).join("")+'</div></div>';
+  }).join("");
+  document.getElementById("c-all").textContent=
+    ITEMS.filter(x=>st(x.id).done).length+" of "+ITEMS.length;
+
+  Object.keys(COURSE).forEach(grade);
+}
+
+/* ============ grade math ============ */
+function val(x){                      // points counted as banked
+  const s=st(x.id);
+  if(s.score!==null) return s.score;
+  if(s.done) return x.p;              // done but unscored, assume full
+  return 0;
+}
+function possible(x){                 // points still reachable
+  const s=st(x.id);
+  if(s.score!==null) return s.score;
+  if(s.done) return x.p;
+  return days(x.d)<0 ? (x.late? x.p*Math.max(0,100-Math.abs(days(x.d))*10)/100 : 0) : x.p;
+}
+const bestN=(arr,n)=>arr.slice().sort((a,b)=>b-a).slice(0,n).reduce((t,v)=>t+v,0);
+
+function grade(c){
+  const C=COURSE[c], mine=ITEMS.filter(x=>x.c===c && !x.xc && !x.unk);
+  let earned, ceiling;
+
+  if(c==="mark"){
+    const ex=mine.filter(x=>x.cat==="e"), as=mine.filter(x=>x.cat==="a"),
+          qz=mine.filter(x=>x.cat==="q");
+    earned  = bestN(ex.map(val),3)      + bestN(as.map(val),10)      + bestN(qz.map(val),10);
+    ceiling = bestN(ex.map(possible),3) + bestN(as.map(possible),10) + bestN(qz.map(possible),10);
+  }else{
+    earned  = mine.reduce((t,x)=>t+val(x),0);
+    ceiling = mine.reduce((t,x)=>t+possible(x),0);
+  }
+  const xc = ITEMS.filter(x=>x.c===c && x.xc);
+  const xcEarned = xc.reduce((t,x)=>t+val(x),0);
+  const xcCeil   = xc.reduce((t,x)=>t+possible(x),0);
+  earned+=xcEarned; ceiling+=xcCeil;
+
+  const unit = C.mode==="pct" ? "%" : "";
+  const dec  = C.mode==="pct" ? 1 : 0;
+  const cap  = C.total + xcCeil;
+  const pct  = Math.min(100, earned/C.total*100);
+
+  const gap = C.aCut - earned;
+  let verdict;
+  if(earned>=C.aCut) verdict="<b>An A is locked in</b> from work already banked.";
+  else if(ceiling<C.aCut){
+    const g=C.scale.find(([,r])=>{const n=parseFloat(r);return ceiling>=n;});
+    verdict="<b>An A is out of reach.</b> The highest still possible is "+
+      ceiling.toFixed(dec)+unit+(g?", which is "+g[0]:"")+".";
+  }else{
+    verdict="<b>"+gap.toFixed(dec)+unit+" still needed for an A</b>, out of "+
+      (ceiling-earned).toFixed(dec)+unit+" still on the table. That is "+
+      Math.round(gap/(ceiling-earned)*100)+"% of everything left.";
+  }
+
+  document.getElementById("p-"+c).innerHTML=
+    '<div class="readout '+c+'">'+
+      '<div class="big-n">'+earned.toFixed(dec)+unit+'</div>'+
+      '<div class="big-l">banked of '+C.total+unit+' possible'+
+        (xcCeil?", plus "+xcCeil+" extra credit":"")+'</div>'+
+      '<div class="bar"><i style="width:'+pct.toFixed(1)+'%"></i>'+
+        '<span class="mark-a" style="left:'+(C.aCut/C.total*100).toFixed(1)+'%"></span></div>'+
+      '<div class="bar-l"><span>0</span><span>A at '+C.aCut+unit+'</span></div>'+
+      '<div class="verdict">'+verdict+'</div>'+
+    '</div>'+
+    '<p class="policy" style="margin-bottom:16px"><b>'+C.full+'</b></p>'+
+    '<table class="rub"><thead><tr><th>What is graded</th><th style="text-align:right">'+
+      (C.mode==="pct"?"Weight":"Points")+'</th></tr></thead><tbody>'+
+      C.rubric.map(([n,p])=>"<tr><td>"+n+"</td><td>"+p+unit+"</td></tr>").join("")+
+    '</tbody></table>'+
+    '<div class="scale">'+C.scale.map(([g,r],i)=>
+      '<span'+(i===0?' class="a"':'')+'>'+g+" "+r+"</span>").join("")+'</div>'+
+    '<p class="policy">'+C.policy+'</p>'+
+    (C.mode==="pct"?'<p class="policy" style="margin-top:12px">Weights in the syllabus add to 102%. '+
+      'These assume the syllabus quiz sits inside the quiz block.</p>':'');
+}
+
+/* ============ interaction ============ */
+document.addEventListener("click",e=>{
+  const row=e.target.closest(".row");
+  if(row){
+    const id=row.dataset.id, s=st(id);
+    if(e.target.closest(".box")||!row.classList.contains("done")){
+      s.done=!s.done; if(!s.done) s.score=null; save(); render();
+    }else{
+      const p=document.querySelector('[data-score="'+id+'"]');
+      if(p){ p.classList.toggle("open"); if(p.classList.contains("open")) p.querySelector("input").focus(); }
+    }
+    return;
+  }
+  const wh=e.target.closest(".week-h");
+  if(wh){
+    const w=wh.parentElement, o=w.dataset.open==="1"?0:1;
+    w.dataset.open=o; wh.setAttribute("aria-expanded",o?"true":"false");
+    S.__wk=S.__wk||{}; S.__wk[wh.dataset.wk]=o; save(); return;
+  }
+  const mb=e.target.closest("#missed-btn");
+  if(mb){
+    const h=missed.hidden; missed.hidden=!h;
+    mb.setAttribute("aria-expanded",h?"true":"false");
+    mb.lastElementChild.textContent=h?"Hide":"Show"; return;
+  }
+  const tab=e.target.closest(".tab");
+  if(tab){
+    document.querySelectorAll(".tab").forEach(t=>t.setAttribute("aria-selected",t===tab));
+    Object.keys(COURSE).forEach(c=>document.getElementById("p-"+c).hidden=(c!==tab.dataset.c));
+    return;
+  }
+  const nb=e.target.closest(".nav button");
+  if(nb){
+    document.querySelectorAll(".nav button").forEach(b=>b.setAttribute("aria-current",b===nb));
+    ["due","all","grades"].forEach(v=>document.getElementById("view-"+v).hidden=(v!==nb.dataset.v));
+    window.scrollTo(0,0);
+  }
+});
+document.addEventListener("keydown",e=>{
+  if((e.key===" "||e.key==="Enter") && e.target.classList?.contains("row")){
+    e.preventDefault(); e.target.click();
+  }
+});
+document.addEventListener("change",e=>{
+  const inp=e.target.closest("[data-score] input"); if(!inp) return;
+  const id=inp.closest("[data-score]").dataset.score, s=st(id);
+  s.score = inp.value===""? null : Math.max(0,parseFloat(inp.value)||0);
+  if(s.score!==null) s.done=true;
+  save(); render();
+});
+document.getElementById("reset").addEventListener("click",()=>{
+  if(confirm("Clear every checkbox and score? This cannot be undone.")){
+    S={}; save(); render();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
